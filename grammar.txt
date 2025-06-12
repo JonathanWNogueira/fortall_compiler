@@ -1,0 +1,55 @@
+<programa> -> <decls> <comandos>
+
+<decls> -> <decl> <decls> | /* vazio */
+
+<decl> -> "inteiro" <lista_ids> ";" | "logico" <lista_ids> ";"
+
+<lista_ids> -> <id> | <id> "," <lista_ids>
+
+<comandos> -> <comando> <comandos> | /* vazio */
+
+<comando> -> <atribuicao> "; | <leitura> ";" | <escrita> ";" | <se> | <enquanto>
+
+<atribuicao> -> <id> "=" <expr>
+
+<leitura> -> "leia" "(" <lista_ids> ")"
+
+<escrita> -> "escreva" "(" <lista_exp> ")"
+
+<se> -> "se" "(" <expr> ")" "entao" <comandos> <senao>
+
+<senao> -> "senao" <comandos> | /* vazio */
+
+<enquanto> -> "enquanto" "(" <expr> ")" <comandos>
+
+<lista_exp> -> <expr> | <expr> "," <lista_exp>
+
+<expr> -> <expr> "||" <expr1> | <expr1>
+
+<expr1> -> <expr1> "&&" <expr2> | <expr2>
+
+<expr2> -> <expr2> "==" <expr3> | <expr2> "!=" <expr3> | <expr3>
+
+<expr3> -> <expr3> "<" <expr4> | <expr3> "<=" <expr4> | <expr3> ">" <expr4> | <expr3> ">=" <expr4> | <expr4>
+
+<expr4> -> <expr4> "+" <expr5> | <expr4> "-" <expr5> | <expr5>
+
+<expr5> -> <expr5> "*" <expr6> | <expr5> "/" <expr6> | <expr5> "%" <expr6> | <expr6>
+
+<expr6> -> "!" <expr6> | "-" <expr6> | <expr7>
+
+<expr7> -> "(" <expr> ")" | <id> | <numero> | <cadeia>
+
+<cadeia> -> "\"" <caracteres> "\""
+
+<caracteres> -> <caractere> <caracteres> | /* vazio */
+<caractere> ::= qualquer caractere exceto " e \ | "\n" | "\t" | "\""
+
+<numero> -> <digito> <numero> | <digito>
+
+<digito> -> "0" | "1" | ... | "9"
+
+<id> -> <letra> <id_cont>
+<id_cont> -> <letra_ou_digito> <id_cont> | /* vazio */
+<letra_ou_digito> -> <letra> | <digito>
+<letra> -> "a" | ... | "z" | "A" | ... | "Z" | "_"
