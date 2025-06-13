@@ -51,8 +51,7 @@ tokens :-
 <0> $digit+         { \s -> TokenNum (read s) }
 
 -- Comentários delimitados por /* */
-<0> "/*" { \s -> TokenComentarioInicio }
-<0> "*/" { \s -> TokenComentarioFim }  -- Fim do comentário, o conteúdo será tratado separadamente
+<0> (\/\*) ([^])* (\*\/) { \s -> TokenComentario (drop 2 (take (length s - 2) s)) }
 
 -- Strings
 <0> \" ([^\"\\] | \\[\"nrt\\])* \" { \s -> TokenCadeia (init (tail s)) }
@@ -86,8 +85,7 @@ data Token
   | TokenDiv
   | TokenMod
   | TokenNao
-  | TokenComentarioInicio 
-  | TokenComentarioFim
+  | TokenComentario String
   | TokenId String
   | TokenNum Int
   | TokenCadeia String
