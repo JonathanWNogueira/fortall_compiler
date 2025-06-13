@@ -1,10 +1,17 @@
 import Lexer
+import Parser
 import System.Environment (getArgs)
 
 main :: IO ()
 main = do
   args <- getArgs
-  src <- if null args then getContents else readFile (head args)
+
+  src <- readFile (head args)
   let tokens = alexScanTokens src
-  putStrLn "Tokens:"
+  
+  putStrLn "=== Tokens ==="
   mapM_ print tokens
+
+  putStrLn "\n=== Análise Sintática ==="
+  let ast = parsePrograma tokens
+  print ast
