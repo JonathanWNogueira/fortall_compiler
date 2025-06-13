@@ -29,6 +29,8 @@ tokens :-
 <0> "="             { \s -> TokenIgual }
 <0> "("             { \s -> TokenAbreParenteses }
 <0> ")"             { \s -> TokenFechaParenteses }
+<0> "{"             { \s -> TokenAbreChaves }
+<0> "}"             { \s -> TokenFechaChaves }
 <0> "||"            { \s -> TokenOu }
 <0> "&&"            { \s -> TokenE }
 <0> "=="            { \s -> TokenIgualIgual }
@@ -71,6 +73,8 @@ data Token
   | TokenIgual
   | TokenAbreParenteses
   | TokenFechaParenteses
+  | TokenAbreChaves
+  | TokenFechaChaves
   | TokenOu
   | TokenE
   | TokenIgualIgual

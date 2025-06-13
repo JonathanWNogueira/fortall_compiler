@@ -3,8 +3,11 @@ logico flag;
 
 leia(x, y);
 x = 10;
-se (x > 0) entao
+se (x > 0) entao {
   escreva("positivo\t");
-senao
+}
+
+senao {
   escreva("negativo");
+}
 /* comentario /.,* */

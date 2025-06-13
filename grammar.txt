@@ -16,11 +16,9 @@
 
 <escrita> -> "escreva" "(" <lista_exp> ")"
 
-<se> -> "se" "(" <expr> ")" "entao" <comandos> <senao>
+<se> -> "se" "(" <expr> ")" "entao" "{" <comandos> }" | "se" "(" <expr> ")" "entao" "{" <comandos> "}" "senao" "{" <comandos> "}"
 
-<senao> -> "senao" <comandos> | /* vazio */
-
-<enquanto> -> "enquanto" "(" <expr> ")" <comandos>
+<enquanto> -> "enquanto" "(" <expr> ")" "{" <comandos> "}"
 
 <lista_exp> -> <expr> | <expr> "," <lista_exp>
 
