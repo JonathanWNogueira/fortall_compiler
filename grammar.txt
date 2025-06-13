@@ -8,7 +8,7 @@
 
 <comandos> -> <comando> <comandos> | /* vazio */
 
-<comando> -> <atribuicao> "; | <leitura> ";" | <escrita> ";" | <se> | <enquanto>
+<comando> -> <atribuicao> "; | <leitura> ";" | <escrita> ";" | <se> | <enquanto> | <comentario>
 
 <atribuicao> -> <id> "=" <expr>
 
@@ -39,6 +39,12 @@
 <expr6> -> "!" <expr6> | "-" <expr6> | <expr7>
 
 <expr7> -> "(" <expr> ")" | <id> | <numero> | <cadeia>
+
+<comentario> -> "/*" <coment_texto> "*/"
+
+<coment_texto> -> <coment_caractere> <coment_texto> | /* vazio */
+
+<coment_caractere> -> qualquer caractere exceto "*/"
 
 <cadeia> -> "\"" <caracteres> "\""
 
