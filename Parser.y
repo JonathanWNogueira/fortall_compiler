@@ -2,46 +2,47 @@
 module Parser where
 
 import Lexer
+import Data.List (intercalate)
 }
 
 %name parsePrograma
-%tokentype { Token }
+%tokentype { TokenWithPos }
 %error { parseError }
 
 %token
-    'inteiro'      { TokenInteiro }
-    'logico'       { TokenLogico }
-    'leia'         { TokenLeia }
-    'escreva'      { TokenEscrita }
-    'se'           { TokenSe }
-    'senao'        { TokenSenao }
-    'entao'        { TokenEntao }
-    'enquanto'     { TokenEnquanto }
-    ';'            { TokenPontoVirgula }
-    ','            { TokenVirgula }
-    '='            { TokenIgual }
-    '('            { TokenAbreParenteses }
-    ')'            { TokenFechaParenteses }
-    '{'            { TokenAbreChaves }
-    '}'            { TokenFechaChaves }
-    '||'           { TokenOu }
-    '&&'           { TokenE }
-    '=='           { TokenIgualIgual }
-    '!='           { TokenDiferente }
-    '<'            { TokenMenor }
-    '<='           { TokenMenorIgual }
-    '>'            { TokenMaior }
-    '>='           { TokenMaiorIgual }
-    '+'            { TokenMais }
-    '-'            { TokenMenos }
-    '*'            { TokenVezes }
-    '/'            { TokenDiv }
-    '%'            { TokenMod }
-    '!'            { TokenNao }
-    string         { TokenCadeia $$ }
-    integer        { TokenNum $$ }
-    id             { TokenId $$ }
-    comentario     { TokenComentario $$ }
+    'inteiro'      { TokenWithPos TokenInteiro _ }
+    'logico'       { TokenWithPos TokenLogico _ }
+    'leia'         { TokenWithPos TokenLeia _ }
+    'escreva'      { TokenWithPos TokenEscrita _ }
+    'se'           { TokenWithPos TokenSe _ }
+    'senao'        { TokenWithPos TokenSenao _ }
+    'entao'        { TokenWithPos TokenEntao _ }
+    'enquanto'     { TokenWithPos TokenEnquanto _ }
+    ';'            { TokenWithPos TokenPontoVirgula _ }
+    ','            { TokenWithPos TokenVirgula _ }
+    '='            { TokenWithPos TokenIgual _ }
+    '('            { TokenWithPos TokenAbreParenteses _ }
+    ')'            { TokenWithPos TokenFechaParenteses _ }
+    '{'            { TokenWithPos TokenAbreChaves _ }
+    '}'            { TokenWithPos TokenFechaChaves _ }
+    '||'           { TokenWithPos TokenOu _ }
+    '&&'           { TokenWithPos TokenE _ }
+    '=='           { TokenWithPos TokenIgualIgual _ }
+    '!='           { TokenWithPos TokenDiferente _ }
+    '<'            { TokenWithPos TokenMenor _ }
+    '<='           { TokenWithPos TokenMenorIgual _ }
+    '>'            { TokenWithPos TokenMaior _ }
+    '>='           { TokenWithPos TokenMaiorIgual _ }
+    '+'            { TokenWithPos TokenMais _ }
+    '-'            { TokenWithPos TokenMenos _ }
+    '*'            { TokenWithPos TokenVezes _ }
+    '/'            { TokenWithPos TokenDiv _ }
+    '%'            { TokenWithPos TokenMod _ }
+    '!'            { TokenWithPos TokenNao _ }
+    string         { TokenWithPos (TokenCadeia $$) _ } 
+    integer        { TokenWithPos (TokenNum $$) _ }
+    id             { TokenWithPos (TokenId $$) _ }
+    comentario     { TokenWithPos (TokenComentario $$) _ }
 
 %right '='
 %left '||'
@@ -60,8 +61,8 @@ Programa :: { Programa }
     : Decls Comandos            { Programa $1 $2 }
 
 Comandos :: { [Comando] }
-    :                        { [] }
-    | Comandos Comando       { $1 ++ [$2] }
+    : {- empty -}               { [] }
+    | Comandos Comando          { $1 ++ [$2] }
 
 Decls :: { [Decl] }
     : Decl Decls                { $1 : $2 }
@@ -76,12 +77,12 @@ ListaIds :: { [String] }
     | id ',' ListaIds           { $1 : $3 }
 
 Comando :: { Comando }
-    : Atribuicao ';'        { CmdAtrib $1 }
-    | Leitura ';'           { CmdLeitura $1 }
-    | Escrita ';'           { CmdEscrita $1 }
-    | Se                     { CmdSe $1}
-    | Enquanto               { CmdEnquanto $1 }
-    | comentario             { CmdComentario $1 }
+    : Atribuicao ';'            { CmdAtrib $1 }
+    | Leitura ';'               { CmdLeitura $1 }
+    | Escrita ';'               { CmdEscrita $1 }
+    | Se                        { CmdSe $1 }
+    | Enquanto                  { CmdEnquanto $1 }
+    | comentario                { CmdComentario $1 }
 
 Atribuicao :: { Atribuicao }
     : id '=' Expr               { Atrib $1 $3 }
@@ -93,8 +94,8 @@ Escrita :: { Escrita }
     : 'escreva' '(' ListaExp ')' { Escrita $3 }
 
 Se :: { Se }
-    : 'se' '(' Expr ')' 'entao' '{' Comandos '}' %prec 'senao'    { Se $3 $7 [] }
-    | 'se' '(' Expr ')' 'entao' '{' Comandos '}' 'senao' '{' Comandos '}' { Se $3 $7 $11 }
+    : 'se' '(' Expr ')' 'entao' '{' Comandos '}' %prec 'senao'              { Se $3 $7 [] }
+    | 'se' '(' Expr ')' 'entao' '{' Comandos '}' 'senao' '{' Comandos '}'   { Se $3 $7 $11 }
 
 Enquanto :: { Enquanto }
     : 'enquanto' '(' Expr ')' '{' Comandos '}' { Enquanto $3 $6 }
@@ -188,6 +189,54 @@ data Expr
     | ECadeia String
     deriving (Show)
 
-parseError :: [Token] -> a
-parseError _ = error "Parse error"
+-- Funções para extrair linha e coluna
+alexLine :: AlexPosn -> Int
+alexLine (AlexPn _ line _) = line
+
+alexColumn :: AlexPosn -> Int
+alexColumn (AlexPn _ _ col) = col
+
+parseError :: [TokenWithPos] -> a
+parseError [] = error "ERRO SINTÁTICO (posição desconhecida)"
+parseError (tok@(TokenWithPos _ pos) : _) = 
+  error $ "ERRO SINTÁTICO (linha " ++ show (alexLine pos) 
+          ++ ", coluna " ++ show (alexColumn pos) ++ ")\n"
+          ++ "Token inesperado: " ++ showToken tok
+
+  where
+    showToken (TokenWithPos t _) = case t of
+      TokenInteiro -> "'inteiro'"
+      TokenLogico -> "'logico'"
+      TokenLeia -> "'leia'"
+      TokenEscrita -> "'escreva'"
+      TokenSe -> "'se'"
+      TokenSenao -> "'senao'"
+      TokenEntao -> "'entao'"
+      TokenEnquanto -> "'enquanto'"
+      TokenPontoVirgula -> "';'"
+      TokenVirgula -> "','"
+      TokenIgual -> "'='"
+      TokenAbreParenteses -> "'('"
+      TokenFechaParenteses -> "')'"
+      TokenAbreChaves -> "'{'"
+      TokenFechaChaves -> "'}'"
+      TokenOu -> "'||'"
+      TokenE -> "'&&'"
+      TokenIgualIgual -> "'=='"
+      TokenDiferente -> "'!='"
+      TokenMenor -> "'<'"
+      TokenMenorIgual -> "'<='"
+      TokenMaior -> "'>'"
+      TokenMaiorIgual -> "'>='"
+      TokenMais -> "'+'"
+      TokenMenos -> "'-'"
+      TokenVezes -> "'*'"
+      TokenDiv -> "'/'"
+      TokenMod -> "'%'"
+      TokenNao -> "'!'"
+      TokenComentario _ -> "comentário"
+      TokenId s -> "identificador '" ++ s ++ "'"
+      TokenNum n -> "número " ++ show n
+      TokenCadeia s -> "string \"" ++ s ++ "\""
+      TokenErro msg _ -> "erro léxico: " ++ msg
 }
