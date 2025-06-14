@@ -14,55 +14,55 @@ tokens :-
 <0> $white+ ;  -- Ignora espaços em branco
 
 -- Palavras-chave
-<0> "inteiro"       { \_ _ -> TokenInteiro }
-<0> "logico"        { \_ _ -> TokenLogico }
-<0> "leia"          { \_ _ -> TokenLeia }
-<0> "escreva"       { \_ _ -> TokenEscrita }
-<0> "se"            { \_ _ -> TokenSe }
-<0> "senao"         { \_ _ -> TokenSenao }
-<0> "entao"         { \_ _ -> TokenEntao }
-<0> "enquanto"      { \_ _ -> TokenEnquanto }
+<0> "inteiro"       { \p s -> TokenWithPos TokenInteiro p }
+<0> "logico"        { \p s -> TokenWithPos TokenLogico p }
+<0> "leia"          { \p s -> TokenWithPos TokenLeia p }
+<0> "escreva"       { \p s -> TokenWithPos TokenEscrita p }
+<0> "se"            { \p s -> TokenWithPos TokenSe p }
+<0> "senao"         { \p s -> TokenWithPos TokenSenao p }
+<0> "entao"         { \p s -> TokenWithPos TokenEntao p }
+<0> "enquanto"      { \p s -> TokenWithPos TokenEnquanto p }
 
 -- Operadores e pontuação
-<0> ";"             { \_ _ -> TokenPontoVirgula }
-<0> ","             { \_ _ -> TokenVirgula }
-<0> "="             { \_ _ -> TokenIgual }
-<0> "("             { \_ _ -> TokenAbreParenteses }
-<0> ")"             { \_ _ -> TokenFechaParenteses }
-<0> "{"             { \_ _ -> TokenAbreChaves }
-<0> "}"             { \_ _ -> TokenFechaChaves }
-<0> "||"            { \_ _ -> TokenOu }
-<0> "&&"            { \_ _ -> TokenE }
-<0> "=="            { \_ _ -> TokenIgualIgual }
-<0> "!="            { \_ _ -> TokenDiferente }
-<0> "<"             { \_ _ -> TokenMenor }
-<0> "<="            { \_ _ -> TokenMenorIgual }
-<0> ">"             { \_ _ -> TokenMaior }
-<0> ">="            { \_ _ -> TokenMaiorIgual }
-<0> "+"             { \_ _ -> TokenMais }
-<0> "-"             { \_ _ -> TokenMenos }
-<0> "*"             { \_ _ -> TokenVezes }
-<0> "/"             { \_ _ -> TokenDiv }
-<0> "%"             { \_ _ -> TokenMod }
-<0> "!"             { \_ _ -> TokenNao }
+<0> ";"             { \p s -> TokenWithPos TokenPontoVirgula p }
+<0> ","             { \p s -> TokenWithPos TokenVirgula p }
+<0> "="             { \p s -> TokenWithPos TokenIgual p }
+<0> "("             { \p s -> TokenWithPos TokenAbreParenteses p }
+<0> ")"             { \p s -> TokenWithPos TokenFechaParenteses p }
+<0> "{"             { \p s -> TokenWithPos TokenAbreChaves p }
+<0> "}"             { \p s -> TokenWithPos TokenFechaChaves p }
+<0> "||"            { \p s -> TokenWithPos TokenOu p }
+<0> "&&"            { \p s -> TokenWithPos TokenE p }
+<0> "=="            { \p s -> TokenWithPos TokenIgualIgual p }
+<0> "!="            { \p s -> TokenWithPos TokenDiferente p }
+<0> "<"             { \p s -> TokenWithPos TokenMenor p }
+<0> "<="            { \p s -> TokenWithPos TokenMenorIgual p }
+<0> ">"             { \p s -> TokenWithPos TokenMaior p }
+<0> ">="            { \p s -> TokenWithPos TokenMaiorIgual p }
+<0> "+"             { \p s -> TokenWithPos TokenMais p }
+<0> "-"             { \p s -> TokenWithPos TokenMenos p }
+<0> "*"             { \p s -> TokenWithPos TokenVezes p }
+<0> "/"             { \p s -> TokenWithPos TokenDiv p }
+<0> "%"             { \p s -> TokenWithPos TokenMod p }
+<0> "!"             { \p s -> TokenWithPos TokenNao p }
 
 -- Identificadores
-<0> $letter $alphaNum* { \_ s -> TokenId s }
+<0> $letter $alphaNum* { \p s -> TokenWithPos (TokenId s) p }
 
 -- Números
-<0> $digit+         { \_ s -> TokenNum (read s) }
+<0> $digit+         { \p s -> TokenWithPos (TokenNum (read s)) p }
 
 -- Comentários delimitados por /* */
-<0> "/*" ( [^] | \*)* "*/" { \_ s -> TokenComentario (drop 2 (take (length s - 2) s)) }
+<0> "/*" ( [^] | [\*] )* "*/" { \p s -> TokenWithPos (TokenComentario (drop 2 (take (length s - 2) s))) p }
 
 -- Strings
-<0> \" ([^\"\\] | \\\\ | \\\" | \\n | \\t)* \" { \_ s -> TokenCadeia (init (tail s)) }
+<0> \" ( [^\"\\] | \\\\ | \\\" | \\n | \\t )* \" { \p s -> TokenWithPos (TokenCadeia (init (tail s))) p }
 
 -- Erros léxicos
-<0> \\ [^\\nrt\\]                                     { \p s -> TokenErro ("Escape invalido: " ++ drop 1 s) p }
-<0> \" ([^\"\\] | \\\\ | \\\" | \\n | \\t)*           { \p s -> TokenErro "String nao fechada" p }
-<0> "/*" ([^])* \**                                   { \p s -> TokenErro "Comentario nao fechado" p }
-<0> .                                                 { \p s -> TokenErro ("Caractere invalido: " ++ s) p }
+<0> \\ [^\\nrt\\]                                     { \p s -> TokenWithPos (TokenErro ("Escape invalido: " ++ drop 1 s) p) p }
+<0> \" ( [^\"\\] | \\\\ | \\\" | \\n | \\t )*         { \p s -> TokenWithPos (TokenErro "String nao fechada" p) p }
+<0> "/*" ( [^] )* \**                                 { \p s -> TokenWithPos (TokenErro "Comentario nao fechado" p) p }
+<0> .                                                 { \p s -> TokenWithPos (TokenErro ("Caractere invalido: " ++ s) p) p }
 
 {
 data Token
@@ -101,4 +101,12 @@ data Token
   | TokenCadeia String
   | TokenErro String AlexPosn
   deriving (Show, Eq)
+
+data TokenWithPos = TokenWithPos Token AlexPosn deriving (Show)
+
+alexScanTokensWithPos :: String -> [TokenWithPos]
+alexScanTokensWithPos = alexScanTokens
+
+stripTokenPos :: TokenWithPos -> Token
+stripTokenPos (TokenWithPos token _) = token
 }
