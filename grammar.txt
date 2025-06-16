@@ -55,5 +55,5 @@
 
 <id> -> <letra> <id_cont>
 <id_cont> -> <letra_ou_digito> <id_cont> | /* vazio */
-<letra_ou_digito> -> <letra> | <digito>
+<letra_ou_digito> -> <letra> | <digito> | <bool>
 <letra> -> "a" | ... | "z" | "A" | ... | "Z" | "_"
