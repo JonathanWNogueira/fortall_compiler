@@ -189,6 +189,53 @@ data Expr
     | ECadeia String
     deriving (Show)
 
+-- Pretty-printing functions
+prettyPrint :: Programa -> String
+prettyPrint (Programa decls cmds) =
+  "Declaracoes:\n" ++ intercalate "\n" (map prettyDecl decls) ++
+  "\n\nComandos:\n" ++ intercalate "\n" (map prettyComando cmds)
+
+prettyDecl :: Decl -> String
+prettyDecl (DeclInteiro ids) = "Inteiro: " ++ intercalate ", " ids
+prettyDecl (DeclLogico ids)  = "Logico: " ++ intercalate ", " ids
+
+prettyComando :: Comando -> String
+prettyComando (CmdAtrib (Atrib id expr)) = id ++ " = " ++ prettyExpr expr
+prettyComando (CmdLeitura (Leitura ids)) = "leia(" ++ intercalate ", " ids ++ ")"
+prettyComando (CmdEscrita (Escrita exprs)) = "escreva(" ++ intercalate ", " (map prettyExpr exprs) ++ ")"
+prettyComando (CmdSe (Se expr thenCmds elseCmds)) =
+  "se(" ++ prettyExpr expr ++ ") entao {\n" ++
+  intercalate "\n" (map (indent 2 . prettyComando) thenCmds) ++
+  "\n}" ++ (if not (null elseCmds)
+            then " senao {\n" ++ intercalate "\n" (map (indent 2 . prettyComando) elseCmds) ++ "\n}"
+            else "")
+prettyComando (CmdEnquanto (Enquanto expr cmds)) =
+  "enquanto(" ++ prettyExpr expr ++ ") {\n" ++
+  intercalate "\n" (map (indent 2 . prettyComando) cmds) ++ "\n}"
+prettyComando (CmdComentario coment) = "/*" ++ coment ++ "*/"
+
+prettyExpr :: Expr -> String
+prettyExpr (EOu e1 e2)      = prettyExpr e1 ++ " || " ++ prettyExpr e2
+prettyExpr (EE e1 e2)       = prettyExpr e1 ++ " && " ++ prettyExpr e2
+prettyExpr (EIgual e1 e2)   = prettyExpr e1 ++ " == " ++ prettyExpr e2
+prettyExpr (EDif e1 e2)     = prettyExpr e1 ++ " != " ++ prettyExpr e2
+prettyExpr (EMenor e1 e2)   = prettyExpr e1 ++ " < " ++ prettyExpr e2
+prettyExpr (EMenorIgual e1 e2) = prettyExpr e1 ++ " <= " ++ prettyExpr e2
+prettyExpr (EMaior e1 e2)   = prettyExpr e1 ++ " > " ++ prettyExpr e2
+prettyExpr (EMaiorIgual e1 e2) = prettyExpr e1 ++ " >= " ++ prettyExpr e2
+prettyExpr (EMais e1 e2)    = prettyExpr e1 ++ " + " ++ prettyExpr e2
+prettyExpr (EMenos e1 e2)   = prettyExpr e1 ++ " - " ++ prettyExpr e2
+prettyExpr (EVezes e1 e2)   = prettyExpr e1 ++ " * " ++ prettyExpr e2
+prettyExpr (EDiv e1 e2)     = prettyExpr e1 ++ " / " ++ prettyExpr e2
+prettyExpr (EMod e1 e2)     = prettyExpr e1 ++ " % " ++ prettyExpr e2
+prettyExpr (ENao e)         = "!" ++ prettyExpr e
+prettyExpr (EId id)         = id
+prettyExpr (ENum n)         = show n
+prettyExpr (ECadeia s)      = "\"" ++ s ++ "\""
+
+indent :: Int -> String -> String
+indent n s = replicate (n*2) ' ' ++ s
+
 -- Funções para extrair linha e coluna
 alexLine :: AlexPosn -> Int
 alexLine (AlexPn _ line _) = line
