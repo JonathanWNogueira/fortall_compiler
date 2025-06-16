@@ -50,8 +50,8 @@
 <caractere> ::= qualquer caractere exceto " e \ | "\n" | "\t" | "\""
 
 <numero> -> <digito> <numero> | <digito>
-
 <digito> -> "0" | "1" | ... | "9"
+<bool> -> "verdadeiro" | "falso"
 
 <id> -> <letra> <id_cont>
 <id_cont> -> <letra_ou_digito> <id_cont> | /* vazio */
