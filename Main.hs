@@ -1,5 +1,6 @@
 import Lexer
 import Parser
+import SemanticAnalyzer
 import System.Environment (getArgs)
 import Control.Exception (catch, ErrorCall(..), evaluate)
 import System.Exit (exitFailure)
@@ -28,17 +29,26 @@ main = do
       catch (do
           programa <- evaluate (parsePrograma tokens)
           putStrLn "=== AST do Programa ==="
+          -- putStrLn $ prettyPrint programa
           print programa
+
+          -- Análise semântica
+          case verificaPrograma programa of
+            Left err -> do
+              hPutStrLn stderr "=== ERROS SEMANTICOS ==="
+              hPutStrLn stderr err
+              exitFailure
+            Right _ -> putStrLn "=== Analise Semantica CHECK ==="
         )
         handleParseError
 
 printLexicalError :: TokenWithPos -> IO ()
 printLexicalError (TokenWithPos (TokenErro msg (AlexPn _ line col)) _) = 
-  hPutStrLn stderr $ "ERRO LÉXICO (linha " ++ show line ++ ", coluna " ++ show col ++ "): " ++ msg
+  hPutStrLn stderr $ "ERRO LEXICO (linha " ++ show line ++ ", coluna " ++ show col ++ "): " ++ msg
 printLexicalError _ = return ()
 
 handleParseError :: ErrorCall -> IO ()
 handleParseError (ErrorCall msg) = do
-  hPutStrLn stderr "=== ERRO SINTÁTICO ==="
+  hPutStrLn stderr "=== ERRO SINTATICO ==="
   hPutStrLn stderr msg
   exitFailure
