@@ -22,6 +22,8 @@ tokens :-
 <0> "senao"         { \p s -> TokenWithPos TokenSenao p }
 <0> "entao"         { \p s -> TokenWithPos TokenEntao p }
 <0> "enquanto"      { \p s -> TokenWithPos TokenEnquanto p }
+<0> "verdadeiro"    { \p s -> TokenWithPos TokenV p } 
+<0> "falso"         { \p s -> TokenWithPos TokenF p }
 
 -- Operadores e pontuação
 <0> ";"             { \p s -> TokenWithPos TokenPontoVirgula p }
@@ -59,7 +61,7 @@ tokens :-
 <0> \" ( [^\"\\] | \\\\ | \\\" | \\n | \\t )* \" { \p s -> TokenWithPos (TokenCadeia (init (tail s))) p }
 
 -- Erros léxicos
-<0> \\ [^\\nrt\\]                                     { \p s -> TokenWithPos (TokenErro ("Escape invalido: " ++ drop 1 s) p) p }
+<0> \\ [^\\nt\\]                                     { \p s -> TokenWithPos (TokenErro ("Escape invalido: " ++ drop 1 s) p) p }
 <0> \" ( [^\"\\] | \\\\ | \\\" | \\n | \\t )*         { \p s -> TokenWithPos (TokenErro "String nao fechada" p) p }
 <0> "/*" ( [^] )* \**                                 { \p s -> TokenWithPos (TokenErro "Comentario nao fechado" p) p }
 <0> .                                                 { \p s -> TokenWithPos (TokenErro ("Caractere invalido: " ++ s) p) p }
@@ -95,6 +97,8 @@ data Token
   | TokenDiv
   | TokenMod
   | TokenNao
+  | TokenV
+  | TokenF
   | TokenComentario String
   | TokenId String
   | TokenNum Int

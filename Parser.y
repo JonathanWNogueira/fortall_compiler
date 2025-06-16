@@ -18,6 +18,8 @@ import Data.List (intercalate)
     'senao'        { TokenWithPos TokenSenao _ }
     'entao'        { TokenWithPos TokenEntao _ }
     'enquanto'     { TokenWithPos TokenEnquanto _ }
+    'verdadeiro'   { TokenWithPos TokenV _ }  
+    'falso'        { TokenWithPos TokenF _ }       
     ';'            { TokenWithPos TokenPontoVirgula _ }
     ','            { TokenWithPos TokenVirgula _ }
     '='            { TokenWithPos TokenIgual _ }
@@ -145,6 +147,8 @@ Expr7 :: { Expr }
     | id                        { EId $1 }
     | integer                   { ENum $1 }
     | string                    { ECadeia $1 }
+    | 'verdadeiro'              { EBool "verdadeiro" }
+    | 'falso'                   { EBool "falso" }
 
 {
 data Programa = Programa [Decl] [Comando] deriving (Show)
@@ -186,6 +190,7 @@ data Expr
     | ENao Expr
     | EId String
     | ENum Int
+    | EBool String
     | ECadeia String
     deriving (Show)
 
@@ -231,6 +236,7 @@ prettyExpr (EMod e1 e2)     = prettyExpr e1 ++ " % " ++ prettyExpr e2
 prettyExpr (ENao e)         = "!" ++ prettyExpr e
 prettyExpr (EId id)         = id
 prettyExpr (ENum n)         = show n
+prettyExpr (EBool b)        = if b == "verdadeiro" then "verdadeiro" else "falso"
 prettyExpr (ECadeia s)      = "\"" ++ s ++ "\""
 
 indent :: Int -> String -> String
@@ -284,6 +290,8 @@ parseError (tok@(TokenWithPos _ pos) : _) =
       TokenComentario _ -> "comentário"
       TokenId s -> "identificador '" ++ s ++ "'"
       TokenNum n -> "número " ++ show n
+      TokenV -> "bool"
+      TokenF -> "bool"
       TokenCadeia s -> "string \"" ++ s ++ "\""
       TokenErro msg _ -> "erro léxico: " ++ msg
 }
