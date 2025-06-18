@@ -1,5 +1,5 @@
 alex Lexer.x
 happy --ghc Parser.y
-ghc --make Main.hs -o compiler
+ghc --make Main.hs -o interpreter
 del /q *.o *.hi  Lexer.hs Parser.hs
-@REM compiler *.txt
+@REM interpreter *.txt

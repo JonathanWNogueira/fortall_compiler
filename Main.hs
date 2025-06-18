@@ -1,7 +1,7 @@
 import Lexer
 import Parser
 import SemanticAnalyzer
-import Simulator
+import Interpreter
 import System.Environment (getArgs)
 import Control.Exception (catch, ErrorCall(..), evaluate)
 import System.Exit (exitFailure)

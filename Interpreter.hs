@@ -1,4 +1,4 @@
-module Simulator where
+module Interpreter where
 
 import Lexer
 import Parser
