@@ -1,0 +1,15 @@
+inteiro x, y;
+logico flag;
+
+enquanto (!flag) {
+    escreva("Digite um numero: ");
+    leia(x);
+    y = x % 2;
+    se (x == y) entao {
+        flag = !flag;
+        escreva ("Parabens, voce acertou!!");
+    }
+    senao {
+        escreva ("Tente novamente, nao foi dessa vez.");
+    }
+}
