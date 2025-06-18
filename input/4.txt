@@ -1,0 +1,16 @@
+inteiro a,b,c,i,n ;
+
+escreva("Quantos termos?");
+leia(n);
+i = 2;
+a = 0;
+b =  1;
+escreva(a);
+escreva(b);
+enquanto (i < n) {
+    c = a + b;
+    escreva(c);
+    a = b;
+    b = c;
+    i = i + 1;
+}
