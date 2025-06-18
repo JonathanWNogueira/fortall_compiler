@@ -23,7 +23,7 @@ type Erro = String
 type Resultado = Either Erro ()
 
 -- Verificação do programa principal
-verificaPrograma :: Programa -> Resultado
+verificaPrograma :: Programa -> Resultado 
 verificaPrograma (Programa decls cmds) = do
     contexto <- verificaDecls decls -- Verifica as declarações
     verificaComandos contexto cmds  -- Verifica os comandos
@@ -79,8 +79,9 @@ verificaLeitura contexto (Leitura ids) = -- Verifica se todas as variáveis est�
   where
     verificaId id = case M.lookup id contexto of
         Nothing -> Left ("Variavel nao declarada: " ++ id)
-        Just Inteiro -> Right ()  -- Só permite inteiros
-        Just Logico -> Left ("Tipo logico nao suportado em leitura: " ++ id)
+        Just _ -> Right ()  
+        -- Just Inteiro    -- Só permite inteiros
+        -- Just Logico -> Left ("Tipo logico nao suportado em leitura: " ++ id)
 
 -- Verifica comando escreva
 verificaEscrita :: Contexto -> Escrita -> Resultado
