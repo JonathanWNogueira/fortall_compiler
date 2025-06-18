@@ -1,6 +1,7 @@
 import Lexer
 import Parser
 import SemanticAnalyzer
+import Simulator
 import System.Environment (getArgs)
 import Control.Exception (catch, ErrorCall(..), evaluate)
 import System.Exit (exitFailure)
@@ -18,27 +19,32 @@ main = do
   
   if not (null lexicalErrors)
     then do
-      hPutStrLn stderr "=== ERROS LÉXICOS ==="
       mapM_ printLexicalError lexicalErrors
       exitFailure
     else do
-      putStrLn "=== Tokens ==="
+      putStrLn "\n=== Tokens ==="
       mapM_ (print . stripTokenPos) tokens
       
       -- Análise sintática
       catch (do
           programa <- evaluate (parsePrograma tokens)
-          putStrLn "=== AST do Programa ==="
+          putStrLn "\n=== AST do Programa ==="
           -- putStrLn $ prettyPrint programa
           print programa
 
           -- Análise semântica
           case verificaPrograma programa of
             Left err -> do
-              hPutStrLn stderr "=== ERROS SEMANTICOS ==="
-              hPutStrLn stderr err
-              exitFailure
-            Right _ -> putStrLn "=== Analise Semantica CHECK ==="
+                hPutStrLn stderr "\n=== ERROS SEMANTICOS ==="
+                hPutStrLn stderr err
+                exitFailure
+            Right _ -> do
+                putStrLn "\n=== Analise Semantica CHECK ==="
+                putStrLn "\n=== Execucao ==="
+                catch (executarPrograma programa) 
+                      (\(e :: ErrorCall) -> do
+                          hPutStrLn stderr $ "Erro durante execucao: " ++ show e
+                          exitFailure)
         )
         handleParseError
 
@@ -49,6 +55,5 @@ printLexicalError _ = return ()
 
 handleParseError :: ErrorCall -> IO ()
 handleParseError (ErrorCall msg) = do
-  hPutStrLn stderr "=== ERRO SINTATICO ==="
   hPutStrLn stderr msg
   exitFailure
