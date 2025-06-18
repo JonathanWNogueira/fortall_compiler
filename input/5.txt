@@ -1,0 +1,16 @@
+inteiro x;
+
+leia(x);
+
+enquanto (x > 1) {
+    se (x % 2 == 0) entao {
+        x = x / 2;
+    }
+    senao { 
+        x = 3*x + 1;
+    }
+
+    escreva(x);
+}
+
+/* 77031 */
