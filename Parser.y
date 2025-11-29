@@ -18,6 +18,8 @@ import Data.List (intercalate)
     'senao'        { TokenWithPos TokenSenao _ }
     'entao'        { TokenWithPos TokenEntao _ }
     'enquanto'     { TokenWithPos TokenEnquanto _ }
+    'repita'       { TokenWithPos TokenRepita _ }
+    'ate'          { TokenWithPos TokenAte _ }
     'verdadeiro'   { TokenWithPos TokenV _ }  
     'falso'        { TokenWithPos TokenF _ }       
     ';'            { TokenWithPos TokenPontoVirgula _ }
@@ -84,6 +86,7 @@ Comando :: { Comando }
     | Escrita ';'               { CmdEscrita $1 }
     | Se                        { CmdSe $1 }
     | Enquanto                  { CmdEnquanto $1 }
+    | Repita ';'                { CmdRepita $1 }
     | comentario                { CmdComentario $1 }
 
 Atribuicao :: { Atribuicao }
@@ -102,6 +105,9 @@ Se :: { Se }
 
 Enquanto :: { Enquanto }
     : 'enquanto' '(' Expr ')' '{' Comandos '}' { Enquanto $3 $6 }
+
+Repita :: { Repita }
+    : 'repita' '{' Comandos '}' 'ate' '(' Expr ')' { Repita $3 $7 }
 
 ListaExp :: { [Expr] }
     : Expr                      { [$1] }
@@ -165,6 +171,7 @@ data Comando
     | CmdEscrita Escrita
     | CmdSe Se
     | CmdEnquanto Enquanto
+    | CmdRepita Repita
     | CmdComentario String
     deriving (Show)
 
@@ -173,6 +180,7 @@ data Leitura = Leitura [String] deriving (Show)
 data Escrita = Escrita [Expr] deriving (Show)
 data Se = Se Expr [Comando] [Comando] deriving (Show)
 data Enquanto = Enquanto Expr [Comando] deriving (Show)
+data Repita = Repita [Comando] Expr deriving (Show)
 
 data Expr
     = EOu Expr Expr
@@ -218,6 +226,9 @@ prettyComando (CmdSe (Se expr thenCmds elseCmds)) =
 prettyComando (CmdEnquanto (Enquanto expr cmds)) =
   "enquanto(" ++ prettyExpr expr ++ ") {\n" ++
   intercalate "\n" (map (indent 2 . prettyComando) cmds) ++ "\n}"
+prettyComando (CmdRepita (Repita cmds expr)) = 
+  "repita {\n" ++ intercalate "\n" (map (indent 2 . prettyComando) cmds) ++
+  "\n} ate (" ++ prettyExpr expr ++ ")"
 prettyComando (CmdComentario coment) = "/*" ++ coment ++ "*/"
 
 prettyExpr :: Expr -> String

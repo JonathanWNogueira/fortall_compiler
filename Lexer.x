@@ -22,6 +22,8 @@ tokens :-
 <0> "senao"         { \p s -> TokenWithPos TokenSenao p }
 <0> "entao"         { \p s -> TokenWithPos TokenEntao p }
 <0> "enquanto"      { \p s -> TokenWithPos TokenEnquanto p }
+<0> "repita"        { \p s -> TokenWithPos TokenRepita p }
+<0> "ate"           { \p s -> TokenWithPos TokenAte p }
 <0> "verdadeiro"    { \p s -> TokenWithPos TokenV p } 
 <0> "falso"         { \p s -> TokenWithPos TokenF p }
 
@@ -76,6 +78,8 @@ data Token
   | TokenSenao
   | TokenEntao
   | TokenEnquanto
+  | TokenRepita
+  | TokenAte
   | TokenPontoVirgula
   | TokenVirgula
   | TokenIgual

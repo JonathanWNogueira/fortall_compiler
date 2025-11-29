@@ -59,6 +59,7 @@ verificaComando contexto comando = case comando of      -- Verifica o tipo de co
     CmdEscrita esc -> verificaEscrita contexto esc      -- Verifica escrita
     CmdSe se -> verificaSe contexto se                  -- Verifica se
     CmdEnquanto enq -> verificaEnquanto contexto enq    -- Verifica enquanto
+    CmdRepita rep -> verificaRepita contexto rep        -- Verifica repita
     CmdComentario _ -> Right ()                         -- Comentários são ignorados
 
 -- Verifica atribuição
@@ -105,6 +106,15 @@ verificaEnquanto contexto (Enquanto expr cmds) = do
     if tipoExpr == Logico
         then verificaComandos contexto cmds
         else Left ("Expressao do 'enquanto' deve ser logica")  
+
+-- Verifica comando repita
+verificaRepita :: Contexto -> Repita -> Resultado
+verificaRepita contexto (Repita cmds expr) = do
+    verificaComandos contexto cmds                  -- Verifica o corpo do loop
+    tipoExpr <- verificaExpr contexto expr
+    if tipoExpr == Logico
+        then Right ()
+        else Left ("Expressao do 'ate' deve ser logica")
 
 -- Verifica expressões e infere tipos
 verificaExpr :: Contexto -> Expr -> Either Erro Tipo

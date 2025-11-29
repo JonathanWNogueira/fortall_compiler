@@ -47,6 +47,7 @@ executarComando exe comando = case comando of
     CmdEscrita esc -> executarEscrita exe esc >> return exe
     CmdSe se -> executarSe exe se
     CmdEnquanto enq -> executarEnquanto exe enq
+    CmdRepita rep -> executarRepita exe rep
     CmdComentario _ -> return exe
 
 -- Atribuição
@@ -118,6 +119,15 @@ executarEnquanto exe (Enquanto expr cmds) = do
             exe' <- executarComandos exe cmds
             executarEnquanto exe' (Enquanto expr cmds)
         VBool False -> return exe
+
+-- Comando Repita ... ate
+executarRepita :: Execucao -> Repita -> IO Execucao
+executarRepita exe (Repita cmds expr) = do
+    exe' <- executarComandos exe cmds  -- Executa o bloco primeiro
+    cond <- avaliarExpr exe' expr      -- Avalia a condição com o novo estado
+    case cond of
+        VBool True -> return exe'                             -- Se verdadeiro, termina
+        VBool False -> executarRepita exe' (Repita cmds expr) -- Se falso, repete
 
 -- Avalia uma expressão
 avaliarExpr :: Execucao -> Expr -> IO Valor
