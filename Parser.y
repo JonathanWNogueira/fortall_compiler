@@ -98,6 +98,7 @@ Escrita :: { Escrita }
 Se :: { Se }
     : 'se' '(' Expr ')' 'entao' '{' Comandos '}' %prec 'senao'              { Se $3 $7 [] }
     | 'se' '(' Expr ')' 'entao' '{' Comandos '}' 'senao' '{' Comandos '}'   { Se $3 $7 $11 }
+    | 'se' '(' Expr ')' 'entao' '{' Comandos '}' 'senao' Se                 { Se $3 $7 [CmdSe $10] }
 
 Enquanto :: { Enquanto }
     : 'enquanto' '(' Expr ')' '{' Comandos '}' { Enquanto $3 $6 }
