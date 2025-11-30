@@ -1,0 +1,16 @@
+inteiro i, soma;
+soma = 0;
+
+/* Inicializa i=0; Enquanto i < 10; Incrementa i=i+1 */
+para (i = 0; i < 10; i = i + 1) {
+    soma = soma + i;
+    escreva("Soma parcial: ", soma);
+}
+
+
+
+repita {
+    i = i - 1;
+    soma = soma - i;
+    escreva("Soma parcial: ", soma);
+} ate (i == 0);
