@@ -60,6 +60,7 @@ verificaComando contexto comando = case comando of      -- Verifica o tipo de co
     CmdSe se -> verificaSe contexto se                  -- Verifica se
     CmdEnquanto enq -> verificaEnquanto contexto enq    -- Verifica enquanto
     CmdRepita rep -> verificaRepita contexto rep        -- Verifica repita
+    CmdPara p -> verificaPara contexto p                -- Verifica para
     CmdComentario _ -> Right ()                         -- Comentários são ignorados
 
 -- Verifica atribuição
@@ -115,6 +116,17 @@ verificaRepita contexto (Repita cmds expr) = do
     if tipoExpr == Logico
         then Right ()
         else Left ("Expressao do 'ate' deve ser logica")
+
+-- Verifica comando para
+verificaPara :: Contexto -> Para -> Resultado
+verificaPara contexto (Para init expr update cmds) = do
+    verificaAtribuicao contexto init                        -- Verifica inicialização
+    tipoExpr <- verificaExpr contexto expr
+    if tipoExpr == Logico                                   -- Verifica se condição é bool
+        then do
+            verificaAtribuicao contexto update              -- Verifica incremento/passo
+            verificaComandos contexto cmds                  -- Verifica corpo do loop
+        else Left ("A condicao do 'para' deve ser logica")
 
 -- Verifica expressões e infere tipos
 verificaExpr :: Contexto -> Expr -> Either Erro Tipo

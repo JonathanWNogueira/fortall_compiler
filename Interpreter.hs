@@ -48,6 +48,7 @@ executarComando exe comando = case comando of
     CmdSe se -> executarSe exe se
     CmdEnquanto enq -> executarEnquanto exe enq
     CmdRepita rep -> executarRepita exe rep
+    CmdPara p -> executarPara exe p
     CmdComentario _ -> return exe
 
 -- Atribuição
@@ -128,6 +129,22 @@ executarRepita exe (Repita cmds expr) = do
     case cond of
         VBool True -> return exe'                             -- Se verdadeiro, termina
         VBool False -> executarRepita exe' (Repita cmds expr) -- Se falso, repete
+
+executarPara :: Execucao -> Para -> IO Execucao
+executarPara exe (Para init expr update cmds) = do
+    exeInit <- executarAtribuicao exe init              -- Executa inicialização (apenas uma vez)
+    loopPara exeInit expr update cmds                   -- Entra no loop
+  where
+    loopPara :: Execucao -> Expr -> Atribuicao -> [Comando] -> IO Execucao
+    loopPara e cond passo corpo = do
+        valCond <- avaliarExpr e cond                           -- Avalia condição
+        case valCond of
+            VBool True -> do
+                e' <- executarComandos e corpo                  -- Executa corpo
+                e'' <- executarAtribuicao e' passo              -- Executa incremento/passo
+                loopPara e'' cond passo corpo                   -- Repete
+            VBool False -> return e                             -- Sai do loop
+            _ -> error "Erro de tipo em tempo de execucao no 'para'"
 
 -- Avalia uma expressão
 avaliarExpr :: Execucao -> Expr -> IO Valor

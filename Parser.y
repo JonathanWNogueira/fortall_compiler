@@ -20,6 +20,7 @@ import Data.List (intercalate)
     'enquanto'     { TokenWithPos TokenEnquanto _ }
     'repita'       { TokenWithPos TokenRepita _ }
     'ate'          { TokenWithPos TokenAte _ }
+    'para'         { TokenWithPos TokenPara _ }
     'verdadeiro'   { TokenWithPos TokenV _ }  
     'falso'        { TokenWithPos TokenF _ }       
     ';'            { TokenWithPos TokenPontoVirgula _ }
@@ -87,6 +88,7 @@ Comando :: { Comando }
     | Se                        { CmdSe $1 }
     | Enquanto                  { CmdEnquanto $1 }
     | Repita ';'                { CmdRepita $1 }
+    | Para                      { CmdPara $1 }
     | comentario                { CmdComentario $1 }
 
 Atribuicao :: { Atribuicao }
@@ -108,6 +110,9 @@ Enquanto :: { Enquanto }
 
 Repita :: { Repita }
     : 'repita' '{' Comandos '}' 'ate' '(' Expr ')' { Repita $3 $7 }
+
+Para :: { Para }
+    : 'para' '(' Atribuicao ';' Expr ';' Atribuicao ')' '{' Comandos '}' { Para $3 $5 $7 $10 }
 
 ListaExp :: { [Expr] }
     : Expr                      { [$1] }
@@ -172,6 +177,7 @@ data Comando
     | CmdSe Se
     | CmdEnquanto Enquanto
     | CmdRepita Repita
+    | CmdPara Para
     | CmdComentario String
     deriving (Show)
 
@@ -181,6 +187,7 @@ data Escrita = Escrita [Expr] deriving (Show)
 data Se = Se Expr [Comando] [Comando] deriving (Show)
 data Enquanto = Enquanto Expr [Comando] deriving (Show)
 data Repita = Repita [Comando] Expr deriving (Show)
+data Para = Para Atribuicao Expr Atribuicao [Comando] deriving (Show)
 
 data Expr
     = EOu Expr Expr

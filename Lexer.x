@@ -24,6 +24,7 @@ tokens :-
 <0> "enquanto"      { \p s -> TokenWithPos TokenEnquanto p }
 <0> "repita"        { \p s -> TokenWithPos TokenRepita p }
 <0> "ate"           { \p s -> TokenWithPos TokenAte p }
+<0> "para"          { \p s -> TokenWithPos TokenPara p }
 <0> "verdadeiro"    { \p s -> TokenWithPos TokenV p } 
 <0> "falso"         { \p s -> TokenWithPos TokenF p }
 
@@ -80,6 +81,7 @@ data Token
   | TokenEnquanto
   | TokenRepita
   | TokenAte
+  | TokenPara
   | TokenPontoVirgula
   | TokenVirgula
   | TokenIgual
