@@ -12,6 +12,8 @@ import Data.List (intercalate)
 %token
     'inteiro'      { TokenWithPos TokenInteiro _ }
     'logico'       { TokenWithPos TokenLogico _ }
+    'decimal'      { TokenWithPos TokenFloat _ }
+    'texto'        { TokenWithPos TokenTexto _ }
     'leia'         { TokenWithPos TokenLeia _ }
     'escreva'      { TokenWithPos TokenEscrita _ }
     'se'           { TokenWithPos TokenSe _ }
@@ -46,6 +48,7 @@ import Data.List (intercalate)
     '!'            { TokenWithPos TokenNao _ }
     string         { TokenWithPos (TokenCadeia $$) _ } 
     integer        { TokenWithPos (TokenNum $$) _ }
+    float          { TokenWithPos (TokenNumFloat $$) _ }
     id             { TokenWithPos (TokenId $$) _ }
     comentario     { TokenWithPos (TokenComentario $$) _ }
 
@@ -76,6 +79,8 @@ Decls :: { [Decl] }
 Decl :: { Decl }
     : 'inteiro' ListaIds ';'    { DeclInteiro $2 }
     | 'logico' ListaIds ';'     { DeclLogico $2 }
+    | 'decimal' ListaIds ';'    { DeclFloat $2 }
+    | 'texto' ListaIds ';'      { DeclTexto $2 }
 
 ListaIds :: { [String] }
     : id                        { [$1] }
@@ -158,6 +163,7 @@ Expr7 :: { Expr }
     : '(' Expr ')'              { $2 }
     | id                        { EId $1 }
     | integer                   { ENum $1 }
+    | float                     { EFloat $1 }
     | string                    { ECadeia $1 }
     | 'verdadeiro'              { EBool "verdadeiro" }
     | 'falso'                   { EBool "falso" }
@@ -168,6 +174,8 @@ data Programa = Programa [Decl] [Comando] deriving (Show)
 data Decl
     = DeclInteiro [String]
     | DeclLogico [String]
+    | DeclFloat [String]
+    | DeclTexto [String]
     deriving (Show)
 
 data Comando
@@ -206,6 +214,7 @@ data Expr
     | ENao Expr
     | EId String
     | ENum Int
+    | EFloat Double
     | EBool String
     | ECadeia String
     deriving (Show)

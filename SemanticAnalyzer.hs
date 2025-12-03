@@ -11,7 +11,7 @@ import GHC.ResponseFile (escapeArgs)
 
 
 -- Tipos da linguagem
-data Tipo = Inteiro | Logico deriving (Eq, Show)
+data Tipo = Inteiro | Logico | Float | Texto deriving (Eq, Show)
 
 -- Contexto (mapeia variáveis para tipos)
 type Contexto = M.Map String Tipo
@@ -39,6 +39,8 @@ verificaDecls decls =
     extraiVars (vars, dups) decl = case decl of                -- Declaração de variável
         DeclInteiro ids -> processaIds ids Inteiro vars dups   -- Processa IDs de inteiros
         DeclLogico ids  -> processaIds ids Logico vars dups    -- Processa IDs lógicos
+        DeclFloat ids   -> processaIds ids Float vars dups     -- Processa IDs decimais
+        DeclTexto ids   -> processaIds ids Texto vars dups     -- Processa IDs de texto
     
     processaIds ids tipo vars dups =                                -- Processa IDs e tipos
         let novasDups = filter (`elem` map fst vars) ids            -- Verifica duplicatas
@@ -148,9 +150,10 @@ verificaExpr contexto expr = case expr of
     EId id            -> case M.lookup id contexto of         -- Verifica identificador
         Nothing -> Left ("Variavel nao declarada: " ++ id)
         Just t -> Right t                                     -- Retorna o tipo da variável
-    ENum _            -> Right Inteiro                        -- Números são considerados inteiros
+    ENum _            -> Right Inteiro                        -- Tipo inteiro
+    EFloat _          -> Right Float                          -- Tipo decimal
     EBool _           -> Right Logico                         -- Booleanos são considerados lógicos
-    ECadeia _         -> Right Inteiro                        -- Strings são consideradas inteiros
+    ECadeia _         -> Right Texto                          -- Tipo texto
 
 -- Funções auxiliares para verificação de expressões
 verificaBinarioLogico :: Contexto -> Expr -> Expr -> Either Erro Tipo
@@ -173,17 +176,21 @@ verificaRelacional :: Contexto -> Expr -> Expr -> Either Erro Tipo
 verificaRelacional contexto e1 e2 = do                        -- Verifica os tipos dos operandos
     t1 <- verificaExpr contexto e1 
     t2 <- verificaExpr contexto e2
-    if t1 == Inteiro && t2 == Inteiro                         -- Ambos devem ser inteiros
+    if (t1 `elem` [Inteiro, Float]) && (t2 `elem` [Inteiro, Float])
         then Right Logico
-        else Left "Operadores relacionais requerem operandos inteiros"
+        else Left "Operadores relacionais requerem operandos numericos"
 
 verificaAritmetico :: Contexto -> Expr -> Expr -> Either Erro Tipo
 verificaAritmetico contexto e1 e2 = do                        -- Verifica os tipos dos operandos
     t1 <- verificaExpr contexto e1
     t2 <- verificaExpr contexto e2
-    if t1 == Inteiro && t2 == Inteiro                         -- Ambos devem ser inteiros
-        then Right Inteiro
-        else Left "Operadores aritméticos requerem operandos inteiros"
+    case (t1, t2) of
+        (Inteiro, Inteiro) -> Right Inteiro
+        (Float, Float)     -> Right Float
+        (Inteiro, Float)   -> Right Float
+        (Float, Inteiro)   -> Right Float 
+        (Texto, Texto)     -> Right Texto 
+        _                  -> Left "Tipos incompativeis para operacao aritmetica"
 
 verificaNao :: Contexto -> Expr -> Either Erro Tipo
 verificaNao contexto e = do                                   -- Verifica o tipo do operando da negação

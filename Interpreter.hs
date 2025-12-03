@@ -10,10 +10,11 @@ import Control.Monad (foldM, when)
 import Control.Monad.RWS (MonadState(put))
 
 -- Valores na linguagem
-data Valor = VInt Int | VBool Bool | VString String deriving (Eq)
+data Valor = VInt Int | VBool Bool | VString String | VFloat Double deriving (Eq)
 
 instance Show Valor where
     show (VInt n) = show n
+    show (VFloat f) = show f
     show (VBool True) = "verdadeiro"
     show (VBool False) = "falso"
     show (VString s) = s
@@ -31,8 +32,10 @@ executarPrograma (Programa decls cmds) = do
     return ()
   where
     inicializarVar exe decl = case decl of
-        DeclInteiro ids -> foldl (\e id -> M.insert id (VInt 0) e) exe ids -- Inicializa inteiros com 0
+        DeclInteiro ids -> foldl (\e id -> M.insert id (VInt 0) e) exe ids      -- Inicializa inteiros com 0
         DeclLogico ids  -> foldl (\e id -> M.insert id (VBool False) e) exe ids -- Inicializa lógicos com False
+        DeclFloat ids   -> foldl (\e id -> M.insert id (VFloat 0.0) e) exe ids  -- Inicia com 0.0
+        DeclTexto ids   -> foldl (\e id -> M.insert id (VString "") e) exe ids  -- Inicia vazio
 
 -- Executa uma lista de comandos
 executarComandos :: Execucao -> [Comando] -> IO Execucao
@@ -87,6 +90,7 @@ executarEscrita exe (Escrita exprs) = do
   where
     imprimirItem :: Valor -> IO ()
     imprimirItem (VInt n) = putStr (show n)
+    imprimirItem (VFloat f) = putStr (show f)
     imprimirItem (VBool b) = putStr (show b)
     imprimirItem (VString s) = imprimirComEscapes s
      where
@@ -160,8 +164,13 @@ avaliarExpr exe expr = case expr of
     EMais e1 e2       -> aritmetica    (+) exe e1 e2
     EMenos e1 e2      -> aritmetica    (-) exe e1 e2
     EVezes e1 e2      -> aritmetica    (*) exe e1 e2
-    EDiv e1 e2        -> aritmetica    div exe e1 e2
-    EMod e1 e2        -> aritmetica    mod exe e1 e2
+    EDiv e1 e2        -> aritmetica    (/) exe e1 e2
+    EMod e1 e2        -> do
+        v1 <- avaliarExpr exe e1
+        v2 <- avaliarExpr exe e2
+        case (v1, v2) of
+            (VInt a, VInt b) -> return $ VInt (a `mod` b)
+            _ -> error "Operacao de modulo requer inteiros"
     ENao e            -> do
         v <- avaliarExpr exe e
         case v of
@@ -169,10 +178,11 @@ avaliarExpr exe expr = case expr of
             _ -> error "Tipo invalido para operador logico"
     EId id            -> return $ fromJust (M.lookup id exe)  -- Seguro após análise
     ENum n            -> return $ VInt n
+    EFloat f -> return $ VFloat f
     EBool "verdadeiro"           -> return $ VBool True
     EBool "falso"                -> return $ VBool False
     ECadeia s         -> return $ VString s
-    
+
 -- Funções auxiliares para operações
 binarioLogico :: (Bool -> Bool -> Bool) -> Execucao -> Expr -> Expr -> IO Valor
 binarioLogico op exe e1 e2 = do
@@ -188,18 +198,25 @@ comparacao op exe e1 e2 = do
     v2 <- avaliarExpr exe e2
     return $ VBool (v1 `op` v2)
 
-relacional :: (Int -> Int -> Bool) -> Execucao -> Expr -> Expr -> IO Valor
+relacional :: (Double -> Double -> Bool) -> Execucao -> Expr -> Expr -> IO Valor
 relacional op exe e1 e2 = do
     v1 <- avaliarExpr exe e1
     v2 <- avaliarExpr exe e2
     case (v1, v2) of
-        (VInt a, VInt b) -> return $ VBool (a `op` b)
-        _ -> error "Operandos relacionais devem ser inteiros"
+        (VInt a, VInt b)     -> return $ VBool (fromIntegral a `op` fromIntegral b)
+        (VFloat a, VFloat b) -> return $ VBool (a `op` b)
+        (VInt a, VFloat b)   -> return $ VBool (fromIntegral a `op` b)
+        (VFloat a, VInt b)   -> return $ VBool (a `op` fromIntegral b)
+        _ -> error "Comparacao invalida"
 
-aritmetica :: (Int -> Int -> Int) -> Execucao -> Expr -> Expr -> IO Valor
-aritmetica op exe e1 e2 = do
+aritmetica :: (Double -> Double -> Double) -> Execucao -> Expr -> Expr -> IO Valor
+aritmetica opDouble exe e1 e2 = do
     v1 <- avaliarExpr exe e1
     v2 <- avaliarExpr exe e2
     case (v1, v2) of
-        (VInt a, VInt b) -> return $ VInt (a `op` b)
-        _ -> error "Operandos aritmeticos devem ser inteiros"
+        (VInt a, VInt b)     -> return $ VInt (truncate (fromIntegral a `opDouble` fromIntegral b)) -- Hack simples ou usar opInt separado
+        (VFloat a, VFloat b) -> return $ VFloat (a `opDouble` b)
+        (VInt a, VFloat b)   -> return $ VFloat (fromIntegral a `opDouble` b)
+        (VFloat a, VInt b)   -> return $ VFloat (a `opDouble` fromIntegral b)
+        (VString a, VString b) -> return $ VString (a ++ b) -- Concatenação de Strings (Apenas para soma)
+        _ -> error "Operacao invalida"

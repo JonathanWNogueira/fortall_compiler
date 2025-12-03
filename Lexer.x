@@ -16,6 +16,8 @@ tokens :-
 -- Palavras-chave
 <0> "inteiro"       { \p s -> TokenWithPos TokenInteiro p }
 <0> "logico"        { \p s -> TokenWithPos TokenLogico p }
+<0> "decimal"       { \p s -> TokenWithPos TokenFloat p }
+<0> "texto"         { \p s -> TokenWithPos TokenTexto p }
 <0> "leia"          { \p s -> TokenWithPos TokenLeia p }
 <0> "escreva"       { \p s -> TokenWithPos TokenEscrita p }
 <0> "se"            { \p s -> TokenWithPos TokenSe p }
@@ -54,7 +56,10 @@ tokens :-
 -- Identificadores
 <0> $letter $alphaNum* { \p s -> TokenWithPos (TokenId s) p }
 
--- Números
+-- Números de ponto flutuante
+<0> $digit+ \. $digit+  { \p s -> TokenWithPos (TokenNumFloat (read s)) p }
+
+-- Números inteiros
 <0> $digit+         { \p s -> TokenWithPos (TokenNum (read s)) p }
 
 -- Comentários delimitados por /* */
@@ -73,6 +78,8 @@ tokens :-
 data Token
   = TokenInteiro
   | TokenLogico
+  | TokenFloat
+  | TokenTexto
   | TokenLeia
   | TokenEscrita
   | TokenSe
@@ -108,6 +115,7 @@ data Token
   | TokenComentario String
   | TokenId String
   | TokenNum Int
+  | TokenNumFloat Double
   | TokenCadeia String
   | TokenErro String AlexPosn
   deriving (Show, Eq)
