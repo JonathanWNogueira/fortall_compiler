@@ -6,9 +6,9 @@ Este projeto implementa um **parser completo** (analisador léxico, sintático e
 
 A linguagem Fortall inclui:
 
-- Tipos: `inteiro`, `lógico`
+- Tipos: `inteiro`, `decimal`, `lógico`, `texto`
 
-- Estruturas de controle: `enquanto`, `se-entao-senao`
+- Estruturas de controle: `se-entao-senao`, `enquanto`, `repita ... até`, `para`
 
 - Entrada e saída: leitura de variáveis e escrita de mensagens/valores
 
@@ -168,9 +168,13 @@ interpreter input.txt
 
 - Sistema de tipos:
 
-- `Inteiro`: Números e strings
+- `Inteiro`: Números inteiros
+
+- `Decimal`: Números reais
 
 - `Logico`: Valores booleanos (`verdadeiro`/`falso`)
+
+- `Texto`: Strings
 
 - Verificações principais:
 
@@ -192,6 +196,8 @@ O interpretador executa programas válidos (após análise semântica) utilizand
 
    - `VInt Int`: Valores inteiros
 
+   - `VFloat Double`: Valores reais
+
    - `VBool Bool`: Valores booleanos
 
    - `VString String`: Cadeias de caracteres (com tratamento de escapes)
@@ -202,7 +208,7 @@ O interpretador executa programas válidos (após análise semântica) utilizand
 
 - **Atribuição**: Atualiza o valor de variáveis no estado de execução
 
-- **Leitura**: Lê valores do terminal (inteiros e booleanos) com tratamento de entrada inválida
+- **Leitura**: Lê valores do terminal com tratamento de entrada inválida
 
 - **Escrita**: Imprime valores no terminal, tratando escapes em strings (`\n`, `\t`, `\"`, `\\`)
 
@@ -210,7 +216,7 @@ O interpretador executa programas válidos (após análise semântica) utilizand
 
    - `se`: Executa blocos condicionais
 
-   - `enquanto`: Executa loops enquanto a condição for verdadeira
+   - `enquanto`, `repita ... ate`, `para`: Executa loops enquanto a condição for verdadeira
 
 - **Avaliação de expressões**:
 
