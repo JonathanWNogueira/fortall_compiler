@@ -22,15 +22,15 @@ main = do
       mapM_ printLexicalError lexicalErrors
       exitFailure
     else do
-      putStrLn "\n=== Tokens ==="
-      mapM_ (print . stripTokenPos) tokens
+      -- putStrLn "\n=== Tokens ==="
+      -- mapM_ (print . stripTokenPos) tokens
       
       -- Análise sintática
       catch (do
           programa <- evaluate (parsePrograma tokens)
-          putStrLn "\n=== AST do Programa ==="
+          -- putStrLn "\n=== AST do Programa ==="
           -- putStrLn $ prettyPrint programa
-          print programa
+          -- print programa
 
           -- Análise semântica
           case verificaPrograma programa of
@@ -39,7 +39,7 @@ main = do
                 hPutStrLn stderr err
                 exitFailure
             Right _ -> do
-                putStrLn "\n=== Analise Semantica CHECK ==="
+                -- putStrLn "\n=== Analise Semantica CHECK ==="
                 putStrLn "\n=== Execucao ==="
                 catch (executarPrograma programa) 
                       (\(e :: ErrorCall) -> do
