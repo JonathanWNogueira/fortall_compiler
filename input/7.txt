@@ -1,0 +1,8 @@
+decimal raio, area;
+texto nome;
+
+nome = "Circulo";
+raio = 2.5;
+area = 3.14159 * raio * raio;
+
+escreva(nome, " tem area: ", area);
