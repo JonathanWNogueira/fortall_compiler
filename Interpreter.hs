@@ -80,6 +80,13 @@ executarLeitura exe (Leitura ids) =
                 _ -> do
                     putStrLn "Entrada invalida. Digite 'verdadeiro' ou 'falso':"
                     lerVar exe id
+            Just (VFloat _) -> case readMaybe input of
+                Just f -> return $ M.insert id (VFloat f) exe
+                Nothing -> do
+                    putStrLn "Entrada invalida. Digite um numero decimal:"
+                    lerVar exe id
+            Just (VString _) -> 
+                return $ M.insert id (VString input) exe -- Aceita qualquer entrada como texto
 
 -- Escrita
 executarEscrita :: Execucao -> Escrita -> IO ()
